@@ -1,0 +1,7 @@
+/target/
+/bak/
+/credential/**/*.json
+/credential/**/*.view
+/jre/
+/memo/
+GoogleAnalyticsReport-0.0.1-SNAPSHOT-jar-with-dependencies.jar
