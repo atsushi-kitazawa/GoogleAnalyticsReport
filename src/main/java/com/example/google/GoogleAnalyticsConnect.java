@@ -100,44 +100,6 @@ public class GoogleAnalyticsConnect {
 		dateRange.setStartDate(startDate);
 		dateRange.setEndDate(endDate);
 
-		// Create Metric
-		// Metric session = new
-		// Metric().setExpression("ga:sessions").setAlias("sessions");
-		// Metric percentNewSessions = new
-		// Metric().setExpression("ga:percentNewSessions").setAlias("percentNewSessions");
-		// Metric newUsers = new
-		// Metric().setExpression("ga:newUsers").setAlias("newUsers");
-		// Metric bounceRate = new
-		// Metric().setExpression("ga:bounceRate").setAlias("bounceRate");
-		// Metric pageSession = new
-		// Metric().setExpression("ga:pageviewsPerSession").setAlias("pageviewsPerSession");
-		// Metric avgSessionTime = new
-		// Metric().setExpression("ga:avgSessionDuration").setAlias("avgSessionDuration");
-		// Metric transactions = new
-		// Metric().setExpression("ga:transactions").setAlias("transactions");
-		// Metric transactionRevenue = new
-		// Metric().setExpression("ga:transactionRevenue").setAlias("transactionRevenue");
-		// Metric transactionsPerSession = new
-		// Metric().setExpression("ga:transactionsPerSession")
-		// .setAlias("transactionsPerSession");
-		// Metric goalConversionRateAll = new
-		// Metric().setExpression("ga:goalConversionRateAll")
-		// .setAlias("goalConversionRateAll");
-
-		// Create Dimension
-		// Dimension userType = new Dimension().setName("ga:userType");
-		// Dimension sourceMedium = new Dimension().setName("ga:sourceMedium");
-
-		// Create the ReportRequest object.
-		// ReportRequest request = new
-		// ReportRequest().setViewId(Credential.getViewMap().get(customer))
-		// .setDateRanges(Arrays.asList(dateRange))
-		// .setMetrics(
-		// Arrays.asList(session, percentNewSessions, newUsers, bounceRate,
-		// pageSession, avgSessionTime,
-		// transactions, transactionRevenue, transactionsPerSession,
-		// goalConversionRateAll))
-		// .setDimensions(Arrays.asList(userType, sourceMedium));
 		ReportRequest request = new ReportRequest().setViewId(Credential.getViewMap().get(customer))
 				.setDateRanges(Arrays.asList(dateRange)).setMetrics(metricList).setDimensions(dimensionList);
 
