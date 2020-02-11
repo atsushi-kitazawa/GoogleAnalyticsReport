@@ -23,7 +23,9 @@ public class GoogleAnalyticsReportingController {
 				startDate = args[0];
 				endDate = args[1];
 			}
-			ResponseOutput ro = new OutputExcel(startDate, endDate);
+			Configure.init();
+			ResponseOutput ro = (ResponseOutput) Configure.getResponseOutputClass()
+					.getConstructor(String.class, String.class).newInstance(startDate, endDate);
 			for (String customerName : Credential.getCredentialMap().keySet()) {
 				GoogleAnalyticsConnect instance = new GoogleAnalyticsConnect(customerName, startDate, endDate);
 				AnalyticsReporting service = instance.initializeAnalyticsReporting();
