@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -19,8 +20,10 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.WorkbookUtil;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import com.google.api.services.analyticsreporting.v4.model.ColumnHeader;
 import com.google.api.services.analyticsreporting.v4.model.DateRangeValues;
 import com.google.api.services.analyticsreporting.v4.model.GetReportsResponse;
+import com.google.api.services.analyticsreporting.v4.model.MetricHeaderEntry;
 import com.google.api.services.analyticsreporting.v4.model.Report;
 import com.google.api.services.analyticsreporting.v4.model.ReportRow;
 
@@ -38,61 +41,79 @@ public class OutputExcel implements ResponseOutput {
 	private static CreationHelper createHelper = wb.getCreationHelper();
 	private static String wbName;
 	private static int no = 1;
-	private static String[] header = { "No", "店舗", "ユーザタイプ", "参照元", "メディア", "セッション", "新規セッション率", "新規ユーザー", "直帰率",
-			"ページ/セッション", "平均セッション時間", "トランザクション数", "収益", "eコマースのコンバージョン率", "コンバージョン率" };
-//	private static String[] header;
 
-	private Map<Integer, List<String>> parseMap = new TreeMap<>();
+	/** ex) Map<ga:session, "セッション"> */
+	private static Map<String, String> headerConvertMap = new HashMap<>();
+	/** ex) Map<1, "セッション"> */
+	private static Map<Integer, String> headerOrderMap = new TreeMap<>();
+	/** ex) Map<1, Map<"セッション", "100">> */
+	private Map<Integer, Map<String, String>> parseMap = new TreeMap<>();
 
 	public OutputExcel(String startDate, String endDate) {
 		wbName = EXCEL_NAME_PREFIX + "_" + startDate + "_" + endDate + EXCEL_NAME_SUFFIX;
 
-//		try (InputStreamReader isr = new InputStreamReader(new FileInputStream(PROP_FILE_LOCATION), "UTF-8");
-//				BufferedReader br = new BufferedReader(isr)) {
-//			Properties p = new Properties();
-//			p.load(br);
-//			List<String> list = new ArrayList<>();
-//			p.forEach((k, v) -> {
-//				list.add(v.toString());
-//			});
-//			header = list.toArray(new String[list.size()]);
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
+		try (InputStreamReader isr = new InputStreamReader(new FileInputStream(PROP_FILE_LOCATION), "UTF-8");
+				BufferedReader br = new BufferedReader(isr)) {
+			Properties p = new Properties();
+			p.load(br);
+			p.forEach((k, v) -> {
+				if (k.toString().startsWith("header.")) {
+					headerOrderMap.put(Integer.parseInt(k.toString().substring("header.".length())), v.toString());
+				} else {
+					headerConvertMap.put(k.toString(), v.toString());
+				}
+			});
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		// System.out.println(headerConvertMap);
+		// System.out.println(headerOrderMap);
+		// System.exit(0);
 	}
 
 	@Override
 	public void parse(GetReportsResponse response) {
 		String customer = (String) response.get("customer");
 		for (Report report : response.getReports()) {
+			ColumnHeader header = report.getColumnHeader();
+			List<String> dimensionHeaders = header.getDimensions();
+			List<MetricHeaderEntry> metricHeaders = header.getMetricHeader().getMetricHeaderEntries();
+
 			List<ReportRow> rows = report.getData().getRows();
 			if (rows == null) {
 				System.out.println("No data found " + customer);
 				return;
 			}
 			for (int i = 0; i < rows.size(); i++) {
-				List<String> parseList = new ArrayList<>();
-				parseList.add(Integer.toString(no));
-				parseList.add(customer);
+				Map<String, String> map = new HashMap<>();
+				// Add No And Customer Data
+				map.put(headerConvertMap.get("no"), Integer.toString(no));
+				map.put(headerConvertMap.get("customer"), customer);
+
+				// Add Dimension And Metric Data
 				ReportRow row = rows.get(i);
 				List<String> dimensions = row.getDimensions();
-				List<DateRangeValues> metrics = row.getMetrics();
-				// Add UserType Dimension
-				parseList.add(dimensions.get(0));
-				// Add Reference And Medium
-				String[] refmedium = dimensions.get(1).split("/");
-				parseList.add(refmedium[0]);
-				parseList.add(refmedium[1]);
-				// Add Metrics
-				for (DateRangeValues values : metrics) {
-					for (String value : values.getValues()) {
-						parseList.add(value);
+				for (int j = 0; j < dimensionHeaders.size(); j++) {
+					if ("ga:sourceMedium".equals(dimensionHeaders.get(j))) {
+						String[] refmedium = dimensions.get(j).split("/");
+						map.put(headerConvertMap.get(dimensionHeaders.get(j) + ".1"), refmedium[0]);
+						map.put(headerConvertMap.get(dimensionHeaders.get(j) + ".2"), refmedium[1]);
+					} else {
+						map.put(headerConvertMap.get(dimensionHeaders.get(j)), dimensions.get(j));
 					}
 				}
-				parseMap.put(no, parseList);
+				List<DateRangeValues> metrics = row.getMetrics();
+				for (DateRangeValues values : metrics) {
+					for (int j = 0; j < metricHeaders.size(); j++) {
+						map.put(headerConvertMap.get(metricHeaders.get(j).getName()), values.getValues().get(j));
+					}
+				}
+				parseMap.put(no, map);
+				// System.out.println(map);
 				no++;
 			}
 		}
+		// System.exit(0);
 		// System.out.println(parseMap);
 	}
 
@@ -102,16 +123,17 @@ public class OutputExcel implements ResponseOutput {
 			// ヘッダの作成
 			Sheet dataset = wb.createSheet(WorkbookUtil.createSafeSheetName(SHEET_NAME));
 			Row headerColume = dataset.createRow((short) 0);
-			for (int i = 0; i < header.length; i++) {
+			List<String> headerOrder = new ArrayList<String>(headerOrderMap.values());
+			for (int i = 0; i < headerOrder.size(); i++) {
 				Cell c = headerColume.createCell(i);
-				c.setCellValue(createHelper.createRichTextString(header[i]));
+				c.setCellValue(createHelper.createRichTextString(headerOrder.get(i)));
 			}
-
-			for (Map.Entry<Integer, List<String>> entry : parseMap.entrySet()) {
+			// データ行の作成
+			for (Map.Entry<Integer, Map<String, String>> entry : parseMap.entrySet()) {
 				Row dataRow = wb.getSheet(SHEET_NAME).createRow(entry.getKey());
-				for (int i = 0; i < header.length; i++) {
+				for (int i = 0; i < headerOrder.size(); i++) {
 					Cell c = dataRow.createCell(i);
-					c.setCellValue(createHelper.createRichTextString(entry.getValue().get(i)));
+					c.setCellValue(createHelper.createRichTextString(entry.getValue().get(headerOrder.get(i))));
 				}
 			}
 

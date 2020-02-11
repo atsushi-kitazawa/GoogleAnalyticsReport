@@ -6,8 +6,11 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.TreeMap;
 
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
@@ -72,15 +75,20 @@ public class GoogleAnalyticsConnect {
 			p.load(is);
 			int dimensionSize = Integer.parseInt(p.getProperty("dimension.size"));
 			int metricSize = Integer.parseInt(p.getProperty("metric.size"));
+			Map<Integer, Dimension> dimensionMap = new TreeMap<>();
+			Map<Integer, Metric> metricMap = new TreeMap<>();
 			p.forEach((k, v) -> {
-				if (dimensionSize > dimensionList.size() && k.toString().matches("dimension\\.\\d++")) {
-					dimensionList.add(new Dimension().setName(v.toString()));
+				if (dimensionSize > dimensionMap.keySet().size() && k.toString().matches("dimension\\.\\d++")) {
+					dimensionMap.put(Integer.parseInt(k.toString().substring("dimension.".length())),
+							new Dimension().setName(v.toString()));
 				}
-				if (metricSize > metricList.size() && k.toString().matches("metric\\.\\d++")) {
-					metricList.add(
-							new Metric().setExpression(v.toString()).setAlias(v.toString().replaceFirst("ga:", "")));
+				if (metricSize > metricMap.keySet().size() && k.toString().matches("metric\\.\\d++")) {
+					metricMap.put(Integer.parseInt(k.toString().substring("metric.".length())),
+							new Metric().setExpression(v.toString()));
 				}
 			});
+			dimensionList = new ArrayList<Dimension>(dimensionMap.values());
+			metricList = new ArrayList<Metric>(metricMap.values());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -125,7 +133,7 @@ public class GoogleAnalyticsConnect {
 	 * @param response
 	 *            An Analytics Reporting API V4 response.
 	 */
-	public static void printResponse(GetReportsResponse response) {
+	public void printResponse(GetReportsResponse response) {
 
 		for (Report report : response.getReports()) {
 			ColumnHeader header = report.getColumnHeader();
@@ -159,6 +167,12 @@ public class GoogleAnalyticsConnect {
 				}
 				System.out.println();
 			}
+		}
+	}
+
+	public void test(GetReportsResponse response) {
+		for (Entry<String, Object> e : response.entrySet()) {
+			System.out.println(e.getKey() + "=" + e.getValue());
 		}
 	}
 }

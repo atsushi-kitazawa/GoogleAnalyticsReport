@@ -31,6 +31,7 @@ public class GoogleAnalyticsReportingController {
 				GetReportsResponse response = instance.getReport(service);
 				ro.parse(response);
 				// instance.printResponse(response);
+				instance.test(response);
 				// break;
 			}
 			ro.output();
