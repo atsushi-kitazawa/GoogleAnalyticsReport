@@ -13,7 +13,9 @@ import java.util.Properties;
 import java.util.TreeMap;
 
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -39,6 +41,7 @@ public class OutputExcel implements ResponseOutput {
 
 	private static Workbook wb = new XSSFWorkbook();
 	private static CreationHelper createHelper = wb.getCreationHelper();
+	private static DataFormat format = wb.createDataFormat();
 	private static String wbName;
 	private static int no = 1;
 
@@ -46,6 +49,8 @@ public class OutputExcel implements ResponseOutput {
 	private static Map<String, String> headerConvertMap = new HashMap<>();
 	/** ex) Map<1, "セッション"> */
 	private static Map<Integer, String> headerOrderMap = new TreeMap<>();
+	/** ex) Map<1, INTEGER> */
+	private static Map<Integer, String> formatMap = new TreeMap<>();
 	/** ex) Map<1, Map<"セッション", "100">> */
 	private Map<Integer, Map<String, String>> parseMap = new TreeMap<>();
 
@@ -57,8 +62,11 @@ public class OutputExcel implements ResponseOutput {
 			Properties p = new Properties();
 			p.load(br);
 			p.forEach((k, v) -> {
-				if (k.toString().startsWith("header.")) {
-					headerOrderMap.put(Integer.parseInt(k.toString().substring("header.".length())), v.toString());
+				if (k.toString().startsWith("header.order.")) {
+					headerOrderMap.put(Integer.parseInt(k.toString().substring("header.order.".length())),
+							v.toString());
+				} else if (k.toString().startsWith("header.format.")) {
+					formatMap.put(Integer.parseInt(k.toString().substring("header.format.".length())), v.toString());
 				} else {
 					headerConvertMap.put(k.toString(), v.toString());
 				}
@@ -68,6 +76,7 @@ public class OutputExcel implements ResponseOutput {
 		}
 		// System.out.println(headerConvertMap);
 		// System.out.println(headerOrderMap);
+		// System.out.println(formatMap);
 		// System.exit(0);
 	}
 
@@ -133,7 +142,34 @@ public class OutputExcel implements ResponseOutput {
 				Row dataRow = wb.getSheet(SHEET_NAME).createRow(entry.getKey());
 				for (int i = 0; i < headerOrder.size(); i++) {
 					Cell c = dataRow.createCell(i);
-					c.setCellValue(createHelper.createRichTextString(entry.getValue().get(headerOrder.get(i))));
+					String val = entry.getValue().get(headerOrder.get(i));
+					switch (formatMap.get(i + 1)) {
+					case "STRING":
+						c.setCellValue(createHelper.createRichTextString(val));
+						break;
+					case "INTEGER":
+						c.setCellValue(Integer.parseInt(val));
+						CellStyle csInt = wb.createCellStyle();
+						csInt.setDataFormat(format.getFormat("0"));
+						c.setCellStyle(csInt);
+						break;
+					case "PERCENT":
+						c.setCellValue(Double.parseDouble(val) / 100);
+						CellStyle csPer = wb.createCellStyle();
+						csPer.setDataFormat(format.getFormat("0.000%"));
+						c.setCellStyle(csPer);
+						break;
+					case "FLOAT":
+					case "TIME":
+					case "CURRENCY":
+						c.setCellValue(Float.parseFloat(val));
+						CellStyle csFloat = wb.createCellStyle();
+						csFloat.setDataFormat(format.getFormat("0.00"));
+						c.setCellStyle(csFloat);
+						break;
+					default:
+						break;
+					}
 				}
 			}
 
