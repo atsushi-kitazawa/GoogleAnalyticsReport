@@ -32,7 +32,6 @@ import com.google.api.services.analyticsreporting.v4.model.ReportRow;
 /**
  * @author atsushi.kitazawa
  */
-
 public class GoogleAnalyticsConnect {
 	private static final String APPLICATION_NAME = "Google Analytics Reporting";
 	private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
@@ -55,15 +54,7 @@ public class GoogleAnalyticsConnect {
 		Optional.ofNullable(endDate).ifPresent(v -> this.endDate = v);
 	}
 
-	/**
-	 * Initializes an Analytics Reporting API V4 service object.
-	 *
-	 * @return An authorized Analytics Reporting API V4 service object.
-	 * @throws IOException
-	 * @throws GeneralSecurityException
-	 */
-	public AnalyticsReporting initializeAnalyticsReporting() throws Exception {
-		/** Construct the Analytics Reporting service object. */
+	public AnalyticsReporting initializeAnalyticsReporting() throws GeneralSecurityException, IOException {
 		HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
 		return new AnalyticsReporting.Builder(httpTransport, JSON_FACTORY, Credential.getCredentialMap().get(customer))
 				.setApplicationName(APPLICATION_NAME).build();
@@ -91,17 +82,10 @@ public class GoogleAnalyticsConnect {
 			metricList = new ArrayList<Metric>(metricMap.values());
 		} catch (IOException e) {
 			e.printStackTrace();
+			System.exit(-1);
 		}
 	}
 
-	/**
-	 * Queries the Analytics Reporting API V4.
-	 *
-	 * @param service
-	 *            An authorized Analytics Reporting API V4 service object.
-	 * @return GetReportResponse The Analytics Reporting API V4 response.
-	 * @throws IOException
-	 */
 	public GetReportsResponse getReport(AnalyticsReporting service) throws IOException {
 		// Create the DateRange object.
 		DateRange dateRange = new DateRange();
@@ -127,12 +111,6 @@ public class GoogleAnalyticsConnect {
 		return response;
 	}
 
-	/**
-	 * Parses and prints the Analytics Reporting API V4 response.
-	 *
-	 * @param response
-	 *            An Analytics Reporting API V4 response.
-	 */
 	public void printResponse(GetReportsResponse response) {
 
 		for (Report report : response.getReports()) {

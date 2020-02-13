@@ -11,6 +11,9 @@ import java.util.Map;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.services.analyticsreporting.v4.AnalyticsReportingScopes;
 
+/**
+ * @author atsushi.kitazawa
+ */
 public class Credential {
 
 	private static final String KEY_FILE_LOCATION = "credential";
@@ -46,6 +49,7 @@ public class Credential {
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
+				System.exit(-1);
 			}
 		}
 		credentialMap.put(customerDir.getName(), credential);

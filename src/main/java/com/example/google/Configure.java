@@ -8,6 +8,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+/**
+ * @author atsushi.kitazawa
+ */
 public class Configure {
 
 	private static final String PROP_FILE_LOCATION = "conf/run.properties";
@@ -24,10 +27,11 @@ public class Configure {
 			});
 		} catch (IOException e) {
 			e.printStackTrace();
+			System.exit(-1);
 		}
 	}
 
-	public static Class<?> getResponseOutputClass() throws Exception {
+	public static Class<?> getResponseOutputClass() throws ClassNotFoundException {
 		return Class.forName(runMap.get(RESPONSE_OUTPUT_CLASS_KEY));
 	}
 }

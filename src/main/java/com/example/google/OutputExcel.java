@@ -118,18 +118,15 @@ public class OutputExcel implements ResponseOutput {
 					}
 				}
 				parseMap.put(no, map);
-				// System.out.println(map);
 				no++;
 			}
 		}
-		// System.exit(0);
-		// System.out.println(parseMap);
 	}
 
 	@Override
 	public void output() throws IOException {
 		try (FileOutputStream fileOut = new FileOutputStream(wbName)) {
-			// ヘッダの作成
+			// create excel header row.
 			Sheet dataset = wb.createSheet(WorkbookUtil.createSafeSheetName(SHEET_NAME));
 			Row headerColume = dataset.createRow((short) 0);
 			List<String> headerOrder = new ArrayList<String>(headerOrderMap.values());
@@ -137,7 +134,7 @@ public class OutputExcel implements ResponseOutput {
 				Cell c = headerColume.createCell(i);
 				c.setCellValue(createHelper.createRichTextString(headerOrder.get(i)));
 			}
-			// データ行の作成
+			// create excel data row.
 			for (Map.Entry<Integer, Map<String, String>> entry : parseMap.entrySet()) {
 				Row dataRow = wb.getSheet(SHEET_NAME).createRow(entry.getKey());
 				for (int i = 0; i < headerOrder.size(); i++) {
@@ -177,6 +174,7 @@ public class OutputExcel implements ResponseOutput {
 			wb.close();
 		} catch (IOException e) {
 			e.printStackTrace();
+			throw e;
 		}
 	}
 
