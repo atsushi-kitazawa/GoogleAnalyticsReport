@@ -12,4 +12,6 @@ public interface ResponseOutput {
 	public void parse(GetReportsResponse response);
 
 	public void output() throws IOException;
+	
+	public void close();
 }

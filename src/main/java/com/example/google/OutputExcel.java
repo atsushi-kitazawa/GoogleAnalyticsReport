@@ -171,13 +171,13 @@ public class OutputExcel implements ResponseOutput {
 			}
 
 			wb.write(fileOut);
-			wb.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw e;
 		}
 	}
 
+	@Override
 	public void close() {
 		try {
 			wb.close();

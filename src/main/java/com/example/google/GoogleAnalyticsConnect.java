@@ -81,8 +81,7 @@ public class GoogleAnalyticsConnect {
 			dimensionList = new ArrayList<Dimension>(dimensionMap.values());
 			metricList = new ArrayList<Metric>(metricMap.values());
 		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(-1);
+			throw new IllegalStateException(e);
 		}
 	}
 

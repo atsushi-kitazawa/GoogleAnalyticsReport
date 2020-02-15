@@ -27,8 +27,7 @@ public class Configure {
 				confMap.put(k.toString(), v.toString());
 			});
 		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(-1);
+			throw new IllegalStateException(e);
 		}
 	}
 

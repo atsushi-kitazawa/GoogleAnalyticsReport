@@ -48,8 +48,7 @@ public class Credential {
 					}
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
-				System.exit(-1);
+				throw new IllegalStateException(e);
 			}
 		}
 		credentialMap.put(customerDir.getName(), credential);
