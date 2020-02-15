@@ -5,6 +5,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.security.GeneralSecurityException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.google.api.services.analyticsreporting.v4.AnalyticsReporting;
 import com.google.api.services.analyticsreporting.v4.model.GetReportsResponse;
@@ -28,7 +30,15 @@ public class GoogleAnalyticsReportingController {
 
 			ResponseOutput ro = (ResponseOutput) Configure.getResponseOutputClass()
 					.getConstructor(String.class, String.class).newInstance(startDate, endDate);
-			for (String customerName : Credential.getCredentialMap().keySet()) {
+
+			List<String> targetCustomers = new ArrayList<>();
+			String target = Configure.getTargetCustomer();
+			if ("all".equals(target)) {
+				targetCustomers.addAll(Credential.getCredentialMap().keySet());
+			} else {
+				targetCustomers.add(target);
+			}
+			for (String customerName : targetCustomers) {
 				GoogleAnalyticsConnect instance = new GoogleAnalyticsConnect(customerName, startDate, endDate);
 				AnalyticsReporting service;
 				GetReportsResponse response;
