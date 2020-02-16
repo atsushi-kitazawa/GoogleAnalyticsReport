@@ -87,9 +87,9 @@ public class OutputExcel implements ResponseOutput {
 			logger.error("OutputExcel create instance failed.", e);
 			throw new RuntimeException(e);
 		}
-		logger.debug("headerConvertMap=", headerConvertMap);
-		logger.debug("headerOrderMap=", headerOrderMap);
-		logger.debug("formatMap=", formatMap);
+		logger.debug("headerConvertMap={}", headerConvertMap);
+		logger.debug("headerOrderMap={}", headerOrderMap);
+		logger.debug("formatMap={}", formatMap);
 	}
 
 	@Override

@@ -35,6 +35,7 @@ public class Configure {
 			logger.error("init() failed.", e);
 			throw new IllegalStateException(e);
 		}
+		logger.debug("confMap={}", confMap);
 	}
 
 	public static Class<?> getResponseOutputClass() throws ClassNotFoundException {

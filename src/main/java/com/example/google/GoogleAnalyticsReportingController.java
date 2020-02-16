@@ -23,6 +23,7 @@ public class GoogleAnalyticsReportingController {
 	private static Logger logger = LoggerFactory.getLogger(GoogleAnalyticsReportingController.class);
 
 	public static void report(String[] args) {
+		logger.info("report() run.");
 		Credential.init();
 		Configure.init();
 

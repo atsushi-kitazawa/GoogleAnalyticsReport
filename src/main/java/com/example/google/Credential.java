@@ -35,6 +35,8 @@ public class Credential {
 				continue;
 			createMap(dir);
 		}
+		logger.debug("credentialMap={}", credentialMap);
+		logger.debug("viewMap={}", viewMap);
 	}
 
 	private static void createMap(File customerDir) {
