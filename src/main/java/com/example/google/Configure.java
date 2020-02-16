@@ -8,10 +8,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * @author atsushi.kitazawa
  */
 public class Configure {
+
+	private static Logger logger = LoggerFactory.getLogger(Configure.class);
 
 	private static final String PROP_FILE_LOCATION = "conf/run.properties";
 	private static final String RESPONSE_OUTPUT_CLASS_KEY = "response.output.class";
@@ -27,6 +32,7 @@ public class Configure {
 				confMap.put(k.toString(), v.toString());
 			});
 		} catch (IOException e) {
+			logger.error("init() failed.", e);
 			throw new IllegalStateException(e);
 		}
 	}

@@ -12,6 +12,9 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.TreeMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
@@ -33,6 +36,9 @@ import com.google.api.services.analyticsreporting.v4.model.ReportRow;
  * @author atsushi.kitazawa
  */
 public class GoogleAnalyticsConnect {
+
+	private static Logger logger = LoggerFactory.getLogger(GoogleAnalyticsConnect.class);
+
 	private static final String APPLICATION_NAME = "Google Analytics Reporting";
 	private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
 	private static final String PROP_FILE_LOCATION = "conf/ga_report.properties";
@@ -81,6 +87,7 @@ public class GoogleAnalyticsConnect {
 			dimensionList = new ArrayList<Dimension>(dimensionMap.values());
 			metricList = new ArrayList<Metric>(metricMap.values());
 		} catch (IOException e) {
+			logger.error("init() failed.", e);
 			throw new IllegalStateException(e);
 		}
 	}

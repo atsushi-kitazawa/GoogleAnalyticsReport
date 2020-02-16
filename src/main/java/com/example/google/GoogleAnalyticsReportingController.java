@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.api.services.analyticsreporting.v4.AnalyticsReporting;
 import com.google.api.services.analyticsreporting.v4.model.GetReportsResponse;
 
@@ -17,30 +20,37 @@ import com.google.api.services.analyticsreporting.v4.model.GetReportsResponse;
  */
 public class GoogleAnalyticsReportingController {
 
+	private static Logger logger = LoggerFactory.getLogger(GoogleAnalyticsReportingController.class);
+
 	public static void report(String[] args) {
 		Credential.init();
 		Configure.init();
 
 		ResponseOutput ro = null;
 		try {
-			String startDate = ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-			String endDate = ZonedDateTime.now().plusDays(6).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+			String startDate = ZonedDateTime.now().minusDays(6).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+			String endDate = ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 			if (args.length != 0) {
 				startDate = args[0];
 				endDate = args[1];
 			}
-
-			ro = (ResponseOutput) Configure.getResponseOutputClass().getConstructor(String.class, String.class)
-					.newInstance(startDate, endDate);
+			logger.info("startDate=" + startDate + " endDate=" + endDate);
 
 			List<String> targetCustomers = new ArrayList<>();
 			String target = Configure.getTargetCustomer();
 			if ("all".equals(target)) {
 				targetCustomers.addAll(Credential.getCredentialMap().keySet());
+				ro = (ResponseOutput) Configure.getResponseOutputClass().getConstructor(String.class, String.class)
+						.newInstance(startDate, endDate);
 			} else {
+				logger.info("target customer is " + target);
+				ro = (ResponseOutput) Configure.getResponseOutputClass()
+						.getConstructor(String.class, String.class, String.class)
+						.newInstance(startDate, endDate, target);
 				targetCustomers.add(target);
 			}
 			for (String customerName : targetCustomers) {
+				logger.debug("start report " + customerName);
 				GoogleAnalyticsConnect instance = new GoogleAnalyticsConnect(customerName, startDate, endDate);
 				AnalyticsReporting service;
 				GetReportsResponse response;
@@ -48,18 +58,20 @@ public class GoogleAnalyticsReportingController {
 					service = instance.initializeAnalyticsReporting();
 					response = instance.getReport(service);
 				} catch (IOException | GeneralSecurityException e) {
-					e.printStackTrace();
+					logger.warn(customerName + "'s reporting failed.", e);
 					continue;
 				}
 				ro.parse(response);
 				// instance.printResponse(response);
 			}
+			logger.debug("start output.");
 			ro.output();
 		} catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException
 				| InstantiationException e) {
-			e.printStackTrace();
+			logger.warn("report() is failed", e);
 		} catch (IOException e) {
 			e.printStackTrace();
+			logger.warn("report() is failed", e);
 		} finally {
 			Optional.ofNullable(ro).ifPresent(r -> r.close());
 		}

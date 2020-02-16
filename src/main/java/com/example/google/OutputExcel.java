@@ -21,6 +21,8 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.WorkbookUtil;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.api.services.analyticsreporting.v4.model.ColumnHeader;
 import com.google.api.services.analyticsreporting.v4.model.DateRangeValues;
@@ -33,6 +35,8 @@ import com.google.api.services.analyticsreporting.v4.model.ReportRow;
  * @author atsushi.kitazawa
  */
 public class OutputExcel implements ResponseOutput {
+
+	private static Logger logger = LoggerFactory.getLogger(OutputExcel.class);
 
 	private static final String EXCEL_NAME_PREFIX = "ga";
 	private static final String EXCEL_NAME_SUFFIX = ".xlsx";
@@ -56,7 +60,15 @@ public class OutputExcel implements ResponseOutput {
 
 	public OutputExcel(String startDate, String endDate) {
 		wbName = EXCEL_NAME_PREFIX + "_" + startDate + "_" + endDate + EXCEL_NAME_SUFFIX;
+		loadProp();
+	}
 
+	public OutputExcel(String startDate, String endDate, String customer) {
+		wbName = EXCEL_NAME_PREFIX + "_" + startDate + "_" + endDate + "_" + customer + EXCEL_NAME_SUFFIX;
+		loadProp();
+	}
+
+	private void loadProp() {
 		try (InputStreamReader isr = new InputStreamReader(new FileInputStream(PROP_FILE_LOCATION), "UTF-8");
 				BufferedReader br = new BufferedReader(isr)) {
 			Properties p = new Properties();
@@ -72,12 +84,12 @@ public class OutputExcel implements ResponseOutput {
 				}
 			});
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error("OutputExcel create instance failed.", e);
+			throw new RuntimeException(e);
 		}
-		// System.out.println(headerConvertMap);
-		// System.out.println(headerOrderMap);
-		// System.out.println(formatMap);
-		// System.exit(0);
+		logger.debug("headerConvertMap=", headerConvertMap);
+		logger.debug("headerOrderMap=", headerOrderMap);
+		logger.debug("formatMap=", formatMap);
 	}
 
 	@Override
@@ -90,7 +102,7 @@ public class OutputExcel implements ResponseOutput {
 
 			List<ReportRow> rows = report.getData().getRows();
 			if (rows == null) {
-				System.out.println("No data found " + customer);
+				logger.info(customer + " is no date.");
 				return;
 			}
 			for (int i = 0; i < rows.size(); i++) {
@@ -171,9 +183,6 @@ public class OutputExcel implements ResponseOutput {
 			}
 
 			wb.write(fileOut);
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw e;
 		}
 	}
 
@@ -182,7 +191,7 @@ public class OutputExcel implements ResponseOutput {
 		try {
 			wb.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.warn("close() failed.");
 		}
 	}
 }

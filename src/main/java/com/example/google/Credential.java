@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.services.analyticsreporting.v4.AnalyticsReportingScopes;
 
@@ -15,6 +18,8 @@ import com.google.api.services.analyticsreporting.v4.AnalyticsReportingScopes;
  * @author atsushi.kitazawa
  */
 public class Credential {
+
+	private static Logger logger = LoggerFactory.getLogger(Credential.class);
 
 	private static final String KEY_FILE_LOCATION = "credential";
 	private static final String CREDENTIAL_FILE_SUFFIX = ".json";
@@ -48,6 +53,7 @@ public class Credential {
 					}
 				}
 			} catch (IOException e) {
+				logger.error("init() failed.", e);
 				throw new IllegalStateException(e);
 			}
 		}

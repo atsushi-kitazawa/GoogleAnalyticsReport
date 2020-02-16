@@ -33,4 +33,4 @@ REM SET CLASSPATH=%CLASSPATH%;lib\curvesapi-1.06.jar
 
 REM echo java -cp %CLASSPATH% -jar GoogleAnalyticsReport-0.0.1-SNAPSHOT.jar
 REM java -cp %CLASSPATH% -jar GoogleAnalyticsReport-0.0.1-SNAPSHOT.jar
-%JAVA_HOME%\java -cp . -jar GoogleAnalyticsReport-0.0.1-SNAPSHOT-jar-with-dependencies.jar %1 %2
+%JAVA_HOME%\java -cp . -jar GoogleAnalyticsReport-1.0.0-jar-with-dependencies.jar %1 %2
