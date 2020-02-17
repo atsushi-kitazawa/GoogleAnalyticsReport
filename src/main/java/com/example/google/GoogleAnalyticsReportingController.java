@@ -60,6 +60,7 @@ public class GoogleAnalyticsReportingController {
 					response = instance.getReport(service);
 				} catch (IOException | GeneralSecurityException e) {
 					logger.warn(customerName + "'s reporting failed.", e);
+					System.out.println(customerName + "'s reporting failed.");
 					continue;
 				}
 				ro.parse(response);
