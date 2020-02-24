@@ -51,10 +51,12 @@ public class OutputExcel implements ResponseOutput {
 
 	/** ex) Map<ga:session, "セッション"> */
 	private static Map<String, String> headerConvertMap = new HashMap<>();
-	/** ex) Map<1, "セッション"> */
+	/** ex) Map<1, "ga:session"> */
 	private static Map<Integer, String> headerOrderMap = new TreeMap<>();
 	/** ex) Map<1, INTEGER> */
 	private static Map<Integer, String> formatMap = new TreeMap<>();
+	/** ex) Map<1, Map<"ga:session", "from,to">> */
+	private Map<String, String> dataConvertMap = new HashMap<>();
 	/** ex) Map<1, Map<"セッション", "100">> */
 	private Map<Integer, Map<String, String>> parseMap = new TreeMap<>();
 
@@ -79,6 +81,8 @@ public class OutputExcel implements ResponseOutput {
 							v.toString());
 				} else if (k.toString().startsWith("header.format.")) {
 					formatMap.put(Integer.parseInt(k.toString().substring("header.format.".length())), v.toString());
+				} else if (k.toString().startsWith("data.convert.")) {
+					dataConvertMap.put(k.toString().substring("data.convert.".length()), v.toString());
 				} else {
 					headerConvertMap.put(k.toString(), v.toString());
 				}
@@ -90,6 +94,7 @@ public class OutputExcel implements ResponseOutput {
 		logger.debug("headerConvertMap={}", headerConvertMap);
 		logger.debug("headerOrderMap={}", headerOrderMap);
 		logger.debug("formatMap={}", formatMap);
+		logger.debug("dataConvertMap={}", dataConvertMap);
 	}
 
 	@Override
@@ -141,17 +146,26 @@ public class OutputExcel implements ResponseOutput {
 			// create excel header row.
 			Sheet dataset = wb.createSheet(WorkbookUtil.createSafeSheetName(SHEET_NAME));
 			Row headerColume = dataset.createRow((short) 0);
-			List<String> headerOrder = new ArrayList<String>(headerOrderMap.values());
-			for (int i = 0; i < headerOrder.size(); i++) {
+			// headerList is [ga:xxxxx, ga:yyyyy, .....]
+			List<String> headerList = new ArrayList<String>(headerOrderMap.values());
+			for (int i = 0; i < headerList.size(); i++) {
 				Cell c = headerColume.createCell(i);
-				c.setCellValue(createHelper.createRichTextString(headerOrder.get(i)));
+				c.setCellValue(createHelper.createRichTextString(headerConvertMap.get(headerList.get(i))));
 			}
 			// create excel data row.
 			for (Map.Entry<Integer, Map<String, String>> entry : parseMap.entrySet()) {
 				Row dataRow = wb.getSheet(SHEET_NAME).createRow(entry.getKey());
-				for (int i = 0; i < headerOrder.size(); i++) {
+				for (int i = 0; i < headerList.size(); i++) {
 					Cell c = dataRow.createCell(i);
-					String val = entry.getValue().get(headerOrder.get(i));
+					String val = entry.getValue().get(headerConvertMap.get(headerList.get(i))).trim();
+					// data convert if val exist in dataConvertMap.
+					if (dataConvertMap.containsKey(headerList.get(i))) {
+						String from = dataConvertMap.get(headerList.get(i)).split(",")[0];
+						String to = dataConvertMap.get(headerList.get(i)).split(",")[1];
+						if (val.equals(from)) {
+							val = to;
+						}
+					}
 					switch (formatMap.get(i + 1)) {
 					case "STRING":
 						c.setCellValue(createHelper.createRichTextString(val));
@@ -181,7 +195,6 @@ public class OutputExcel implements ResponseOutput {
 					}
 				}
 			}
-
 			wb.write(fileOut);
 		}
 	}
