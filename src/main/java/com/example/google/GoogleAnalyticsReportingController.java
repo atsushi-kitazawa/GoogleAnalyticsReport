@@ -51,7 +51,7 @@ public class GoogleAnalyticsReportingController {
 				targetCustomers.add(target);
 			}
 			for (String customerName : targetCustomers) {
-				logger.debug("start report " + customerName);
+				logger.info("start report " + customerName);
 				GoogleAnalyticsConnect instance = new GoogleAnalyticsConnect(customerName, startDate, endDate);
 				AnalyticsReporting service;
 				GetReportsResponse response;
