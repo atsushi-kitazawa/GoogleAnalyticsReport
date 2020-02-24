@@ -207,4 +207,24 @@ public class OutputExcel implements ResponseOutput {
 			logger.warn("close() failed.");
 		}
 	}
+
+	public static Map<String, String> getHeaderConvertMap() {
+		return headerConvertMap;
+	}
+
+	public static Map<Integer, String> getHeaderOrderMap() {
+		return headerOrderMap;
+	}
+
+	public static Map<Integer, String> getFormatMap() {
+		return formatMap;
+	}
+
+	public Map<String, String> getDataConvertMap() {
+		return dataConvertMap;
+	}
+
+	public Map<Integer, Map<String, String>> getParseMap() {
+		return parseMap;
+	}
 }
