@@ -24,11 +24,12 @@ public class GoogleAnalyticsReportingController {
 
 	public static void report(String[] args) {
 		logger.info("report() run.");
-		Credential.init();
-		Configure.init();
 
 		ResponseOutput ro = null;
 		try {
+			Credential.init();
+			Configure.init();
+
 			String startDate = ZonedDateTime.now().minusDays(6).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 			String endDate = ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 			if (args.length != 0) {
@@ -74,6 +75,8 @@ public class GoogleAnalyticsReportingController {
 		} catch (IOException e) {
 			e.printStackTrace();
 			logger.warn("report() is failed", e);
+		} catch (Exception e) {
+			logger.error("report() is failed", e);
 		} finally {
 			Optional.ofNullable(ro).ifPresent(r -> r.close());
 		}

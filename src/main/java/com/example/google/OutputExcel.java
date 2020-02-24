@@ -88,8 +88,7 @@ public class OutputExcel implements ResponseOutput {
 				}
 			});
 		} catch (IOException e) {
-			logger.error("OutputExcel create instance failed.", e);
-			throw new RuntimeException(e);
+			throw new RuntimeException("OutputExcel create instance failed.", e);
 		}
 		logger.debug("headerConvertMap={}", headerConvertMap);
 		logger.debug("headerOrderMap={}", headerOrderMap);
@@ -142,6 +141,7 @@ public class OutputExcel implements ResponseOutput {
 
 	@Override
 	public void output() throws IOException {
+		logger.info("output() run");
 		try (FileOutputStream fileOut = new FileOutputStream(wbName)) {
 			// create excel header row.
 			Sheet dataset = wb.createSheet(WorkbookUtil.createSafeSheetName(SHEET_NAME));

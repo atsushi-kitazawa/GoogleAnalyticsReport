@@ -32,7 +32,6 @@ public class Configure {
 				confMap.put(k.toString(), v.toString());
 			});
 		} catch (IOException e) {
-			logger.error("init() failed.", e);
 			throw new IllegalStateException(e);
 		}
 		logger.debug("confMap={}", confMap);

@@ -55,7 +55,6 @@ public class Credential {
 					}
 				}
 			} catch (IOException e) {
-				logger.error("init() failed.", e);
 				throw new IllegalStateException(e);
 			}
 		}
