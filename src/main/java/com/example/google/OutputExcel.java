@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.TreeMap;
 
@@ -159,12 +160,16 @@ public class OutputExcel implements ResponseOutput {
 					Cell c = dataRow.createCell(i);
 					String val = entry.getValue().get(headerConvertMap.get(headerList.get(i))).trim();
 					// data convert if val exist in dataConvertMap.
-					if (dataConvertMap.containsKey(headerList.get(i))) {
-						String from = dataConvertMap.get(headerList.get(i)).split(",")[0];
-						String to = dataConvertMap.get(headerList.get(i)).split(",")[1];
-						if (val.equals(from)) {
-							val = to;
+					if("ga:sourceMedium.2".equals(headerList.get(i))) {
+						for(Entry<String, String> e : dataConvertMap.entrySet()) {
+							String from = e.getValue().split(",")[0];
+							String to = e.getValue().split(",")[1];
+							if(val.equals(from)) {
+								val = to;
+							}
 						}
+					} else {
+						// other header not implementation...
 					}
 					switch (formatMap.get(i + 1)) {
 					case "STRING":
