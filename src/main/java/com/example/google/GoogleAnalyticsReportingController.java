@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.security.GeneralSecurityException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -30,8 +31,11 @@ public class GoogleAnalyticsReportingController {
 			Credential.init();
 			Configure.init();
 
-			String startDate = ZonedDateTime.now().minusDays(6).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-			String endDate = ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+			String startDate = ZonedDateTime.now()
+											.with(TemporalAdjusters.firstDayOfMonth())
+											.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+			String endDate = ZonedDateTime	.now()
+											.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 			if (args.length != 0) {
 				startDate = args[0];
 				endDate = args[1];
@@ -41,14 +45,16 @@ public class GoogleAnalyticsReportingController {
 			List<String> targetCustomers = new ArrayList<>();
 			String target = Configure.getTargetCustomer();
 			if ("all".equals(target)) {
-				targetCustomers.addAll(Credential.getCredentialMap().keySet());
-				ro = (ResponseOutput) Configure.getResponseOutputClass().getConstructor(String.class, String.class)
-						.newInstance(startDate, endDate);
+				targetCustomers.addAll(Credential	.getCredentialMap()
+													.keySet());
+				ro = (ResponseOutput) Configure	.getResponseOutputClass()
+												.getConstructor(String.class, String.class)
+												.newInstance(startDate, endDate);
 			} else {
 				logger.info("target customer is " + target);
-				ro = (ResponseOutput) Configure.getResponseOutputClass()
-						.getConstructor(String.class, String.class, String.class)
-						.newInstance(startDate, endDate, target);
+				ro = (ResponseOutput) Configure	.getResponseOutputClass()
+												.getConstructor(String.class, String.class, String.class)
+												.newInstance(startDate, endDate, target);
 				targetCustomers.add(target);
 			}
 			for (String customerName : targetCustomers) {
@@ -78,7 +84,8 @@ public class GoogleAnalyticsReportingController {
 		} catch (Exception e) {
 			logger.error("report() is failed", e);
 		} finally {
-			Optional.ofNullable(ro).ifPresent(r -> r.close());
+			Optional.ofNullable(ro)
+					.ifPresent(r -> r.close());
 		}
 	}
 }
